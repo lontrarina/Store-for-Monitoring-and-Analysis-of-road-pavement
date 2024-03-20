@@ -114,7 +114,38 @@ def get_db():
 # FastAPI CRUDL endpoints--------------------------------------------------------------------------------------------------
 
 
-#Insert data
+
+
+
+#Get list of data
+@app.get("/processed_agent_data/", response_model=list[ProcessedAgentDataInDB])
+def list_processed_agent_data(db: Session = Depends(get_db)):
+    try:
+        processed_agent_data_ = db.query(processed_agent_data).all()
+        return processed_agent_data_
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+#Get data by Id
+@app.get("/processed_agent_data/{processed_agent_data_id}", response_model=ProcessedAgentDataInDB)
+def read_processed_agent_data(processed_agent_data_id: int, db: Session = Depends(get_db)):
+    try:
+        query = select(processed_agent_data).where(processed_agent_data.c.id == processed_agent_data_id)
+        result = db.execute(query).first()
+
+        if result is None:
+            raise HTTPException(status_code=404, detail="Data not found")
+
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+
+#Create data
 @app.post("/processed_agent_data/")
 async def create_processed_agent_data(data: ProcessedAgentData, db: Session = Depends(get_db)):
     try:
@@ -158,35 +189,7 @@ async def create_processed_agent_data(data: ProcessedAgentData, db: Session = De
 
 
 
-
-#--------------------------------------------------------------------------------
-@app.get("/processed_agent_data/", response_model=list[ProcessedAgentDataInDB])
-def list_processed_agent_data(db: Session = Depends(get_db)):
-    try:
-        processed_agent_data_ = db.query(processed_agent_data).all()
-        return processed_agent_data_
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-
-
-
-@app.get("/processed_agent_data/{processed_agent_data_id}", response_model=ProcessedAgentDataInDB)
-def read_processed_agent_data(processed_agent_data_id: int, db: Session = Depends(get_db)):
-    try:
-        query = select(processed_agent_data).where(processed_agent_data.c.id == processed_agent_data_id)
-        result = db.execute(query).first()
-
-        if result is None:
-            raise HTTPException(status_code=404, detail="Data not found")
-
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-
+#Update data
 @app.put("/processed_agent_data/{processed_agent_data_id}", response_model=ProcessedAgentDataInDB)
 def update_processed_agent_data(processed_agent_data_id: int, data: ProcessedAgentData, db: Session = Depends(get_db)):
     try:
@@ -234,7 +237,7 @@ def update_processed_agent_data(processed_agent_data_id: int, data: ProcessedAge
 
 
 
-
+#Delete data
 @app.delete("/processed_agent_data/{processed_agent_data_id}", response_model=ProcessedAgentDataInDB)
 def delete_processed_agent_data(processed_agent_data_id: int, db: Session = Depends(get_db)):
     try:
@@ -254,6 +257,7 @@ def delete_processed_agent_data(processed_agent_data_id: int, db: Session = Depe
         return existing_data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn
